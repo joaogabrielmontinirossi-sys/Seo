@@ -99,6 +99,10 @@ class Rest {
 				'description' => Autofix::description( $rendered, $kp, $lang ),
 				'slug'        => Autofix::slug( $title, $kp, $lang ),
 				'alts'        => $alts,
+				// Ano vencido trocado pelo atual no título do post e no título SEO.
+				'year_title'     => Autofix::update_years( $title, (int) wp_date( 'Y' ) ),
+				'title_and_year' => Autofix::title( Autofix::update_years( $title, (int) wp_date( 'Y' ) ), get_bloginfo( 'name' ), Settings::get( 'separator' ), $kp ),
+				'year_seo_title' => Autofix::update_years( isset( $data['title'] ) ? $data['title'] : '', (int) wp_date( 'Y' ) ),
 			)
 		);
 	}

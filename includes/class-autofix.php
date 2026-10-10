@@ -148,6 +148,26 @@ class Autofix {
 	}
 
 	/**
+	 * Troca o ano mais recente, se já passou, pelo ano atual
+	 * ("Melhores de 2024 (desde 2019)" → "Melhores de 2026 (desde 2019)").
+	 * Anos mais antigos costumam ser referências históricas e ficam como estão.
+	 */
+	public static function update_years( $text, $current_year ) {
+		$years = Analysis\Quality_Analyzer::years( $text );
+		if ( ! $years || max( $years ) >= $current_year ) {
+			return (string) $text;
+		}
+		$latest = max( $years );
+		return preg_replace_callback(
+			Analysis\Quality_Analyzer::YEAR_PATTERN,
+			static function ( $m ) use ( $latest, $current_year ) {
+				return (int) $m[1] === $latest ? (string) $current_year : $m[1];
+			},
+			(string) $text
+		);
+	}
+
+	/**
 	 * Texto alternativo legível a partir do nome do arquivo.
 	 */
 	public static function alt_from_filename( $url ) {

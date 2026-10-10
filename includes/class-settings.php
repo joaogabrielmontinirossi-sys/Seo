@@ -36,6 +36,7 @@ class Settings {
 			'noindex_author_archives'  => 0,
 			'redirect_attachments'     => 1,
 			'auto_alt'                 => 1,
+			'show_updated_date'        => 0,
 			'auto_description'         => 1,
 			'min_words'                => 300,
 		);

@@ -17,8 +17,10 @@ require __DIR__ . '/../includes/analysis/class-language.php';
 require __DIR__ . '/../includes/analysis/class-result.php';
 require __DIR__ . '/../includes/analysis/class-readability-analyzer.php';
 require __DIR__ . '/../includes/analysis/class-seo-analyzer.php';
+require __DIR__ . '/../includes/analysis/class-quality-analyzer.php';
 require __DIR__ . '/../includes/class-autofix.php';
 
+use SeoLegibilidade\Analysis\Quality_Analyzer;
 use SeoLegibilidade\Analysis\Readability_Analyzer;
 use SeoLegibilidade\Analysis\Seo_Analyzer;
 use SeoLegibilidade\Autofix;
@@ -41,10 +43,23 @@ foreach ( $cases as $c ) {
 			)
 		),
 		'readability' => ( new Readability_Analyzer( $c['lang'] ) )->analyze( $c['content'] ),
+		'quality'     => ( new Quality_Analyzer( $c['lang'] ) )->analyze(
+			array(
+				'content'       => $c['content'],
+				'post_title'    => $c['post_title'],
+				'title'         => $c['title'],
+				'description'   => $c['description'],
+				'site_url'      => $c['site_url'],
+				'current_year'  => $c['current_year'],
+				'modified_days' => $c['modified_days'],
+				'author_bio'    => $c['author_bio'],
+			)
+		),
 		'fix'         => array(
 			'title'       => Autofix::title( $c['post_title'], 'Meu Site', '-', $c['keyphrase'] ),
 			'description' => Autofix::description( $c['content'], $c['keyphrase'], $c['lang'] ),
 			'slug'        => Autofix::slug( $c['post_title'], $c['keyphrase'], $c['lang'] ),
+			'years'       => Autofix::update_years( $c['post_title'] . ' ' . $c['title'], $c['current_year'] ),
 			'alt'         => Autofix::alt_from_filename( 'https://x.com/wp-content/uploads/' . $c['slug'] . '-800x600.jpg' ),
 		),
 	);

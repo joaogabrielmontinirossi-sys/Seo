@@ -192,6 +192,9 @@ class Schema {
 			if ( $author->user_url ) {
 				$person['sameAs'] = array( $author->user_url );
 			}
+			if ( '' !== trim( (string) $author->description ) ) {
+				$person['description'] = wp_strip_all_tags( $author->description );
+			}
 			$article['author'] = $person;
 		}
 		if ( $image ) {

@@ -187,13 +187,15 @@ a {
 	gap: 12px;
 }
 
-.site-settings .field-grid {
+.site-settings .field-grid,
+.field-grid-even {
 	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
 }
 
 @media (max-width: 560px) {
 	.field-grid,
-	.site-settings .field-grid {
+	.site-settings .field-grid,
+	.field-grid-even {
 		grid-template-columns: minmax(0, 1fr);
 	}
 }
@@ -401,7 +403,7 @@ textarea {
 /* Notas */
 .scores {
 	display: flex;
-	gap: 24px;
+	gap: 12px 22px;
 	flex-wrap: wrap;
 }
 
@@ -412,8 +414,8 @@ textarea {
 }
 
 .score svg {
-	width: 56px;
-	height: 56px;
+	width: 52px;
+	height: 52px;
 	transform: rotate(-90deg);
 }
 

@@ -7,6 +7,7 @@
 
 namespace SeoLegibilidade;
 
+use SeoLegibilidade\Analysis\Quality_Analyzer;
 use SeoLegibilidade\Analysis\Readability_Analyzer;
 use SeoLegibilidade\Analysis\Seo_Analyzer;
 use SeoLegibilidade\Analysis\Text;
@@ -52,12 +53,25 @@ class Analysis_Service {
 			)
 		);
 		$readability = ( new Readability_Analyzer( $lang ) )->analyze( $rendered );
+		$quality     = ( new Quality_Analyzer( $lang ) )->analyze(
+			array(
+				'content'       => $rendered,
+				'post_title'    => isset( $context['title'] ) ? $context['title'] : '',
+				'title'         => $seo_title,
+				'description'   => $description,
+				'site_url'      => home_url( '/' ),
+				'current_year'  => (int) wp_date( 'Y' ),
+				'modified_days' => self::modified_days( $post_id ),
+				'author_bio'    => self::author_has_bio( $post_id ),
+			)
+		);
 
 		$preview_desc = '' !== $description ? $description : $auto_desc;
 
 		return array(
 			'seo'         => $seo,
 			'readability' => $readability,
+			'quality'     => $quality,
 			'preview'     => array(
 				'title'             => $seo_title,
 				'title_px'          => Text::pixel_width( $seo_title ),
@@ -76,6 +90,25 @@ class Analysis_Service {
 			$link        = str_replace( array( '%postname%', '%pagename%' ), $slug, $tpl );
 		}
 		return $link;
+	}
+
+	/**
+	 * Dias desde a última atualização (null para posts ainda não salvos).
+	 */
+	public static function modified_days( $post_id ) {
+		$post = $post_id ? get_post( $post_id ) : null;
+		if ( ! $post || 'auto-draft' === $post->post_status || '0000-00-00 00:00:00' === $post->post_modified_gmt ) {
+			return null;
+		}
+		return max( 0, (int) floor( ( time() - strtotime( $post->post_modified_gmt . ' UTC' ) ) / DAY_IN_SECONDS ) );
+	}
+
+	public static function author_has_bio( $post_id ) {
+		$post = $post_id ? get_post( $post_id ) : null;
+		if ( ! $post || ! $post->post_author ) {
+			return null;
+		}
+		return '' !== trim( (string) get_the_author_meta( 'description', $post->post_author ) );
 	}
 
 	/**
@@ -125,5 +158,6 @@ class Analysis_Service {
 		);
 		update_post_meta( $post_id, Meta::key( 'seo_score' ), $result['seo']['score'] );
 		update_post_meta( $post_id, Meta::key( 'readability_score' ), $result['readability']['score'] );
+		update_post_meta( $post_id, Meta::key( 'quality_score' ), $result['quality']['score'] );
 	}
 }

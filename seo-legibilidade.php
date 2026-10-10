@@ -3,7 +3,7 @@
  * Plugin Name:       SEO & Legibilidade
  * Plugin URI:        https://github.com/joaogabrielmontinirossi-sys/seo
  * Description:       Analisa e corrige SEO e legibilidade de posts e páginas: frase-chave, título, meta descrição, slug, imagens, links, Flesch (adaptado ao português), voz passiva, palavras de transição, além de meta tags, Open Graph, dados estruturados (JSON-LD), canonical, robots e sitemap XML.
- * Version:           1.0.0
+ * Version:           1.1.0
  * Requires at least: 6.2
  * Requires PHP:      7.4
  * Author:            João Gabriel Montini Rossi
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SEOL_VERSION', '1.0.0' );
+define( 'SEOL_VERSION', '1.1.0' );
 define( 'SEOL_FILE', __FILE__ );
 define( 'SEOL_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SEOL_URL', plugin_dir_url( __FILE__ ) );
@@ -27,6 +27,7 @@ require_once SEOL_DIR . 'includes/analysis/class-language.php';
 require_once SEOL_DIR . 'includes/analysis/class-result.php';
 require_once SEOL_DIR . 'includes/analysis/class-readability-analyzer.php';
 require_once SEOL_DIR . 'includes/analysis/class-seo-analyzer.php';
+require_once SEOL_DIR . 'includes/analysis/class-quality-analyzer.php';
 require_once SEOL_DIR . 'includes/class-settings.php';
 require_once SEOL_DIR . 'includes/class-meta.php';
 require_once SEOL_DIR . 'includes/class-templates.php';

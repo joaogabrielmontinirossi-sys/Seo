@@ -92,4 +92,34 @@ class Language {
 	public static function generic_anchors( $lang ) {
 		return array( 'clique aqui', 'clique', 'aqui', 'saiba mais', 'leia mais', 'veja mais', 'acesse', 'link', 'este link', 'neste link', 'mais', 'click here', 'here', 'read more', 'learn more', 'more', 'this link', 'link here' );
 	}
+
+	/**
+	 * Palavras que iniciam perguntas (subtítulos em forma de pergunta).
+	 */
+	public static function question_words( $lang ) {
+		if ( 'en' === $lang ) {
+			return array( 'how', 'what', 'why', 'when', 'which', 'where', 'who', 'whom', 'whose', 'is', 'are', 'can', 'should', 'does', 'do', 'will' );
+		}
+		return array( 'como', 'o que', 'que', 'qual', 'quais', 'quanto', 'quanta', 'quantos', 'quantas', 'quando', 'onde', 'por que', 'porque', 'quem', 'vale a pena', 'é possível', 'existe', 'pode', 'devo', 'preciso' );
+	}
+
+	/**
+	 * Expressões de tempo relativo que envelhecem mal sem uma data concreta.
+	 */
+	public static function relative_time( $lang ) {
+		if ( 'en' === $lang ) {
+			return array( 'currently', 'nowadays', 'recently', 'this year', 'last year', 'next year', 'in recent years', 'last month', 'last week', 'these days', 'right now' );
+		}
+		return array( 'atualmente', 'hoje em dia', 'recentemente', 'ultimamente', 'este ano', 'neste ano', 'esse ano', 'nesse ano', 'ano passado', 'no ano que vem', 'próximo ano', 'nos últimos anos', 'mês passado', 'semana passada', 'nos dias de hoje' );
+	}
+
+	/**
+	 * Expressões que indicam experiência própria (o primeiro "E" de E-E-A-T).
+	 */
+	public static function experience_phrases( $lang ) {
+		if ( 'en' === $lang ) {
+			return array( 'we tested', 'i tested', 'in my experience', 'in our experience', 'our tests', 'my tests', 'we used', 'i used', 'hands-on', 'we compared', 'i compared', 'we reviewed', 'we visited', 'we interviewed', 'i have been', 'we have been' );
+		}
+		return array( 'testamos', 'testei', 'experimentamos', 'experimentei', 'na minha experiência', 'na nossa experiência', 'em nossos testes', 'nos nossos testes', 'em meus testes', 'nos meus testes', 'usei', 'usamos', 'utilizei', 'utilizamos', 'na prática', 'avaliamos', 'avaliei', 'comparamos', 'comparei', 'visitamos', 'visitei', 'entrevistamos', 'entrevistei', 'eu uso', 'nós usamos', 'trabalho com', 'trabalhamos com' );
+	}
 }

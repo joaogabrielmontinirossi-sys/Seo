@@ -56,6 +56,24 @@ Requisitos: WordPress 6.2+ e PHP 7.4+. Use links permanentes com **"Nome do post
 | Palavras complexas | No máximo 10% de palavras longas |
 | Listas | Recomendadas em textos com mais de 600 palavras |
 
+### Atualidade e confiança
+
+Sinais que as atualizações recentes do Google (conteúdo útil, E-E-A-T, AI Overviews) valorizam e que dá para medir no texto:
+
+| Verificação | Padrão adotado |
+|---|---|
+| Anos citados no título | Nenhum ano vencido no título ("Melhores de 2024" em 2026). Botão para trocar pelo ano atual |
+| Última atualização | Revisado nos últimos 12 meses (alerta), 24 meses (problema) |
+| Referências de tempo | "Atualmente", "recentemente" etc. acompanhados de datas concretas |
+| Fontes citadas | 2 ou mais sites externos diferentes |
+| Dados concretos | Números, preços, medidas ou estatísticas em textos com 300+ palavras |
+| Experiência própria | Sinais de teste, uso ou comparação feitos pelo autor |
+| Autoria | Autor com biografia (também enviada no JSON-LD) |
+| Subtítulos em forma de pergunta | Ao menos um H2/H3 com a pergunta do leitor |
+| Respostas diretas | Logo abaixo de cada pergunta, um parágrafo de 15 a 60 palavras ou uma lista |
+
+No painel do WordPress, o widget **Conteúdo para atualizar** lista os posts com ano vencido no título ou sem revisão há mais de um ano. Opcionalmente, o plugin mostra "Atualizado em …" no início dos posts revisados.
+
 A nota de cada aba vai de 0 a 100: verde a partir de 71, laranja de 41 a 70 e vermelho até 40.
 
 ## O que é gerado no site
@@ -99,6 +117,7 @@ includes/analysis/              Motor de análise (sem dependência do WordPress
   class-language.php            Conectivos, voz passiva e palavras vazias (pt/en), Flesch
   class-seo-analyzer.php        Verificações de SEO
   class-readability-analyzer.php Verificações de legibilidade
+  class-quality-analyzer.php    Atualidade e confiança
 includes/class-autofix.php      Gera título, descrição, slug e alt dentro dos padrões
 includes/class-frontend.php     <title>, meta tags, robots, canonical, OG/Twitter
 includes/class-schema.php       JSON-LD

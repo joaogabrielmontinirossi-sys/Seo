@@ -43,10 +43,12 @@ cases.forEach( ( c, i ) => {
 	const js = {
 		seo: res.seo,
 		readability: res.readability,
+		quality: res.quality,
 		fix: {
 			title: SEOL.Autofix.title( c.post_title, 'Meu Site', '-', c.keyphrase ),
 			description: SEOL.Autofix.description( c.content, c.keyphrase, c.lang ),
 			slug: SEOL.Autofix.slug( c.post_title, c.keyphrase, c.lang ),
+			years: SEOL.Autofix.updateYears( c.post_title + ' ' + c.title, c.current_year ),
 			alt: SEOL.Autofix.altFromFilename( 'https://x.com/wp-content/uploads/' + c.slug + '-800x600.jpg' ),
 		},
 	};

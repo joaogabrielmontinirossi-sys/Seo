@@ -1037,6 +1037,230 @@
 	};
 
 	/* ================================================================ */
+	/* Atualidade e confiança                                            */
+	/* ================================================================ */
+
+	var QUALITY = { STALE_DAYS: 365, VERY_STALE_DAYS: 730, ANSWER_MIN_WORDS: 15, ANSWER_MAX_WORDS: 60 };
+
+	function years( text ) {
+		var out = [];
+		var re = /(?<![\p{N}])(19\d{2}|20\d{2})(?![\p{N}])/gu;
+		var m;
+		while ( ( m = re.exec( String( text || '' ) ) ) ) {
+			out.push( parseInt( m[ 1 ], 10 ) );
+		}
+		return out;
+	}
+
+	function Quality( lang ) {
+		this.lang = lang === 'en' ? 'en' : 'pt';
+		this.L = LANG[ this.lang ];
+	}
+
+	Quality.prototype.padded = function ( text ) {
+		return ' ' + Text.words( String( text || '' ).toLowerCase() ).join( ' ' ) + ' ';
+	};
+
+	Quality.prototype.findPhrases = function ( text, phrases ) {
+		var padded = this.padded( text );
+		return phrases.filter( function ( p ) {
+			return padded.indexOf( ' ' + p + ' ' ) !== -1;
+		} );
+	};
+
+	Quality.prototype.analyze = function ( data ) {
+		var d = Object.assign( { content: '', post_title: '', title: '', description: '', site_url: '', current_year: new Date().getFullYear(), modified_days: null, author_bio: null }, data );
+		var html = String( d.content );
+		var text = Text.strip( html );
+		var words = Text.wordCount( text );
+		var r = [
+			this.outdatedYears( d, html, parseInt( d.current_year, 10 ) ),
+			this.lastUpdated( d.modified_days ),
+			this.relativeDates( text ),
+			this.sources( html, String( d.site_url ), words ),
+			this.authorBio( d.author_bio ),
+			this.experience( text, words ),
+			this.dataPoints( text, words ),
+			this.questionHeadings( html, words ),
+			this.directAnswers( html ),
+		].filter( Boolean );
+		var sc = score( r );
+		return { score: sc, rating: ratingForScore( sc ), results: sortResults( r ) };
+	};
+
+	function pastYears( text, current ) {
+		return unique(
+			years( text ).filter( function ( y ) {
+				return y < current;
+			} )
+		);
+	}
+
+	Quality.prototype.outdatedYears = function ( d, html, current ) {
+		var label = 'Anos citados no título';
+		var titles = ( d.post_title + ' ' + d.title ).trim();
+		var past = pastYears( titles, current );
+		if ( past.length ) {
+			return R( 'outdated_year', label, 'bad', sprintf( 'O título cita %1$s, mas estamos em %2$d. Se o conteúdo foi revisado, atualize o ano; títulos com ano vencido perdem cliques. Ignore se o texto for histórico.', past.join( ', ' ), current ), 'year' );
+		}
+		var elsewhere = d.description;
+		Text.headings( html ).forEach( function ( h ) {
+			elsewhere += ' ' + h.text;
+		} );
+		var pastElsewhere = pastYears( elsewhere, current );
+		if ( pastElsewhere.length ) {
+			return R( 'outdated_year', label, 'ok', sprintf( 'A meta descrição ou os subtítulos citam %s. Confira se ainda está correto.', pastElsewhere.join( ', ' ) ) );
+		}
+		if ( years( titles ).indexOf( current ) !== -1 ) {
+			return R( 'outdated_year', label, 'good', 'O título cita o ano atual. Lembre-se de revisá-lo no ano que vem.' );
+		}
+		return R( 'outdated_year', label, 'good', 'O título não cita anos desatualizados.' );
+	};
+
+	Quality.prototype.lastUpdated = function ( days ) {
+		if ( days === null || days === undefined || days === '' ) {
+			return null;
+		}
+		days = Math.max( 0, parseInt( days, 10 ) || 0 );
+		var label = 'Última atualização';
+		if ( days <= QUALITY.STALE_DAYS ) {
+			return R( 'last_updated', label, 'good', days === 0 ? 'Conteúdo atualizado hoje.' : sprintf( nPlural( 'Conteúdo atualizado há %d dia.', 'Conteúdo atualizado há %d dias.', days ), days ) );
+		}
+		var msg = sprintf( 'O conteúdo não é atualizado há cerca de %d meses. Revise dados, preços, links e capturas de tela; o Google valoriza informação atual.', Math.floor( days / 30 ) );
+		return R( 'last_updated', label, days <= QUALITY.VERY_STALE_DAYS ? 'ok' : 'bad', msg );
+	};
+
+	Quality.prototype.relativeDates = function ( text ) {
+		var found = this.findPhrases( text, this.L.relativeTime );
+		if ( ! found.length ) {
+			return null;
+		}
+		var label = 'Referências de tempo';
+		if ( years( text ).length ) {
+			return R( 'relative_dates', label, 'good', 'O texto situa o leitor no tempo com datas concretas.' );
+		}
+		return R( 'relative_dates', label, 'ok', sprintf( 'O texto usa "%s" sem citar nenhuma data. Com o tempo isso fica impreciso: inclua datas concretas (ex.: "em março de 2026").', found.join( '", "' ) ) );
+	};
+
+	Quality.prototype.sources = function ( html, siteUrl, words ) {
+		var site = hostOf( siteUrl ).replace( /^www\./, '' );
+		var hosts = [];
+		Text.links( html ).forEach( function ( l ) {
+			if ( ! /^(https?:)?\/\//i.test( l.href ) ) {
+				return;
+			}
+			var h = hostOf( l.href ).replace( /^www\./, '' );
+			if ( h !== '' && h !== site && hosts.indexOf( h ) === -1 ) {
+				hosts.push( h );
+			}
+		} );
+		var n = hosts.length;
+		var label = 'Fontes citadas';
+		if ( n >= 2 ) {
+			return R( 'sources', label, 'good', sprintf( 'O texto cita %d fontes externas diferentes. Isso reforça a confiabilidade.', n ) );
+		}
+		if ( n === 1 ) {
+			return R( 'sources', label, 'ok', 'O texto cita só uma fonte externa. Apoie dados e afirmações importantes em mais fontes confiáveis (estudos, órgãos oficiais, especialistas).' );
+		}
+		return R( 'sources', label, words >= 300 ? 'bad' : 'ok', 'O texto não cita nenhuma fonte externa. Link para estudos, órgãos oficiais ou especialistas que confirmem o que você afirma.' );
+	};
+
+	Quality.prototype.authorBio = function ( has ) {
+		if ( has === null || has === undefined ) {
+			return null;
+		}
+		if ( has ) {
+			return R( 'author_bio', 'Autoria', 'good', 'O autor tem biografia. Mostre nela a experiência dele com o assunto.' );
+		}
+		return R( 'author_bio', 'Autoria', 'ok', 'O autor não tem biografia. Escreva uma (Usuários → Perfil → Informações biográficas) mostrando formação e experiência no assunto.' );
+	};
+
+	Quality.prototype.experience = function ( text, words ) {
+		if ( words < 300 ) {
+			return null;
+		}
+		if ( this.findPhrases( text, this.L.experiencePhrases ).length ) {
+			return R( 'experience', 'Experiência própria', 'good', 'O texto mostra experiência própria com o assunto (testes, uso, comparações). O Google valoriza isso.' );
+		}
+		return R( 'experience', 'Experiência própria', 'ok', 'O texto não mostra experiência própria. Conte o que você testou, usou ou comparou, com detalhes e fotos próprias: é o que diferencia seu conteúdo do resto.' );
+	};
+
+	Quality.prototype.dataPoints = function ( text, words ) {
+		if ( words < 300 ) {
+			return null;
+		}
+		if ( /\p{N}/u.test( text ) ) {
+			return R( 'data_points', 'Dados concretos', 'good', 'O texto traz números e dados concretos.' );
+		}
+		return R( 'data_points', 'Dados concretos', 'ok', 'O texto não traz nenhum número. Inclua dados concretos (preços, medidas, prazos, estatísticas com fonte) para torná-lo mais útil e verificável.' );
+	};
+
+	Quality.prototype.isQuestion = function ( heading ) {
+		heading = String( heading || '' ).trim();
+		if ( heading === '' ) {
+			return false;
+		}
+		if ( heading.slice( -1 ) === '?' ) {
+			return true;
+		}
+		var padded = this.padded( heading );
+		return this.L.questionWords.some( function ( q ) {
+			return padded.indexOf( ' ' + q + ' ' ) === 0;
+		} );
+	};
+
+	Quality.prototype.questionHeadings = function ( html, words ) {
+		var self = this;
+		var subs = Text.headings( html ).filter( function ( h ) {
+			return h.level === 2 || h.level === 3;
+		} );
+		if ( subs.length < 2 && words < 600 ) {
+			return null;
+		}
+		var q = subs.filter( function ( h ) {
+			return self.isQuestion( h.text );
+		} ).length;
+		var label = 'Subtítulos em forma de pergunta';
+		if ( q ) {
+			return R( 'question_headings', label, 'good', sprintf( nPlural( '%d subtítulo responde a uma pergunta do leitor. Isso ajuda a aparecer em trechos em destaque e nas AI Overviews.', '%d subtítulos respondem a perguntas do leitor. Isso ajuda a aparecer em trechos em destaque e nas AI Overviews.', q ), q ) );
+		}
+		return R( 'question_headings', label, 'ok', 'Nenhum subtítulo é uma pergunta. Transforme alguns nas perguntas que o leitor faria (ex.: "Como escolher…?", "Quanto custa…?") e responda logo abaixo.' );
+	};
+
+	Quality.prototype.directAnswers = function ( html ) {
+		var parts = String( html || '' ).split( /(<h[23]\b[^>]*>[\s\S]*?<\/h[23]>)/i );
+		var total = 0;
+		var long = [];
+		var missing = [];
+		for ( var i = 1; i < parts.length; i += 2 ) {
+			var heading = Text.strip( parts[ i ] ).trim();
+			if ( ! this.isQuestion( heading ) ) {
+				continue;
+			}
+			total++;
+			var body = parts[ i + 1 ] || '';
+			var first = body.replace( /^(\s|<!--[\s\S]*?-->)+/, '' );
+			if ( /^<(ul|ol)\b/i.test( first ) ) {
+				continue;
+			}
+			var paras = Text.paragraphs( body );
+			var count = paras.length ? Text.wordCount( paras[ 0 ] ) : 0;
+			if ( count < QUALITY.ANSWER_MIN_WORDS ) {
+				missing.push( heading );
+			} else if ( count > QUALITY.ANSWER_MAX_WORDS ) {
+				long.push( heading );
+			}
+		}
+		if ( total === 0 ) {
+			return null;
+		}
+		if ( ! long.length && ! missing.length ) {
+			return R( 'direct_answers', 'Respostas diretas', 'good', 'Cada pergunta é respondida logo no primeiro parágrafo, de forma objetiva. Formato ideal para trechos em destaque e AI Overviews.' );
+		}
+		return R( 'direct_answers', 'Respostas diretas', 'ok', sprintf( 'Responda logo abaixo de cada pergunta em um parágrafo de 15 a 60 palavras (ou com uma lista) e detalhe depois. Ajuste: "%s".', long.concat( missing ).join( '", "' ) ) );
+	};
+
+	/* ================================================================ */
 	/* Correções automáticas                                             */
 	/* ================================================================ */
 
@@ -1139,6 +1363,17 @@
 		return Text.pixelWidth( withSite ) <= SEO.TITLE_MAX_PX ? withSite : fit( postTitle, SEO.TITLE_MAX_PX );
 	};
 
+	Autofix.updateYears = function ( text, currentYear ) {
+		var ys = years( text );
+		if ( ! ys.length || Math.max.apply( null, ys ) >= currentYear ) {
+			return String( text || '' );
+		}
+		var latest = Math.max.apply( null, ys );
+		return String( text ).replace( /(?<![\p{N}])(19\d{2}|20\d{2})(?![\p{N}])/gu, function ( m, y ) {
+			return parseInt( y, 10 ) === latest ? String( currentYear ) : y;
+		} );
+	};
+
 	Autofix.altFromFilename = function ( url ) {
 		var path = String( url || '' ).replace( /[?#].*$/, '' );
 		var name = path.split( '/' ).pop().replace( /\.[^.]+$/, '' );
@@ -1157,6 +1392,7 @@
 		Text: Text,
 		Readability: Readability,
 		Seo: Seo,
+		Quality: Quality,
 		Autofix: Autofix,
 		limits: SEO,
 		ratingForScore: ratingForScore,
@@ -1170,6 +1406,16 @@
 			return {
 				seo: new Seo( lang ).analyze( seoData ),
 				readability: new Readability( lang ).analyze( data.content ),
+				quality: new Quality( lang ).analyze( {
+					content: data.content,
+					post_title: data.post_title || '',
+					title: data.title || '',
+					description: data.description || '',
+					site_url: data.site_url || '',
+					current_year: data.current_year || new Date().getFullYear(),
+					modified_days: data.modified_days === undefined ? null : data.modified_days,
+					author_bio: data.author_bio === undefined ? null : data.author_bio,
+				} ),
 				auto_description: auto,
 			};
 		},

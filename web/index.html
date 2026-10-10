@@ -87,6 +87,25 @@
 					<p class="hint">O endereço serve para distinguir links internos de externos.</p>
 				</details>
 
+				<details class="site-settings">
+					<summary>Atualização e autoria</summary>
+					<div class="field-grid field-grid-even">
+						<label class="field">
+							<span>Última atualização do texto</span>
+							<input id="updatedAt" type="date">
+						</label>
+						<label class="field">
+							<span>O autor tem biografia no site?</span>
+							<select id="authorBio">
+								<option value="">Não informar</option>
+								<option value="yes">Sim</option>
+								<option value="no">Não</option>
+							</select>
+						</label>
+					</div>
+					<p class="hint">Usados na análise de atualidade e confiança.</p>
+				</details>
+
 				<div class="field">
 					<div class="content-head">
 						<span id="contentLabel">Conteúdo</span>
@@ -122,6 +141,10 @@
 						<svg viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="value" cx="18" cy="18" r="15.9"/></svg>
 						<div><strong>–</strong><span>Legibilidade</span></div>
 					</div>
+					<div class="score" id="scoreQuality">
+						<svg viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="value" cx="18" cy="18" r="15.9"/></svg>
+						<div><strong>–</strong><span>Atualidade</span></div>
+					</div>
 				</div>
 				<p class="stats" id="stats"></p>
 
@@ -137,9 +160,11 @@
 				<div class="tabs" role="tablist">
 					<button type="button" role="tab" aria-selected="true" data-tab="seo">SEO <span class="count" id="countSeo"></span></button>
 					<button type="button" role="tab" aria-selected="false" data-tab="readability">Legibilidade <span class="count" id="countRead"></span></button>
+					<button type="button" role="tab" aria-selected="false" data-tab="quality">Atualidade <span class="count" id="countQuality"></span></button>
 				</div>
 				<ul class="results" id="resultsSeo" role="tabpanel"></ul>
 				<ul class="results" id="resultsRead" role="tabpanel" hidden></ul>
+				<ul class="results" id="resultsQuality" role="tabpanel" hidden></ul>
 			</aside>
 		</div>
 
@@ -172,6 +197,17 @@
 						<li>Nunca 3 frases seguidas começando com a mesma palavra</li>
 					</ul>
 				</div>
+				<div class="card">
+					<h3>Atualidade e confiança</h3>
+					<ul>
+						<li>Nenhum ano vencido no título (ex.: "Melhores de 2024" em 2026)</li>
+						<li>Texto revisado nos últimos 12 meses</li>
+						<li>Datas concretas em vez de só "atualmente" ou "recentemente"</li>
+						<li>Duas ou mais fontes externas e dados concretos</li>
+						<li>Sinais de experiência própria e autor com biografia</li>
+						<li>Subtítulos em forma de pergunta, respondidos logo abaixo em 15 a 60 palavras (formato de trechos em destaque e AI Overviews)</li>
+					</ul>
+				</div>
 			</div>
 			<p class="hint">Notas: verde a partir de 71, laranja de 41 a 70, vermelho até 40. Os limites seguem o Google Search Central e as faixas consolidadas pelas principais ferramentas de SEO.</p>
 		</section>
@@ -181,6 +217,7 @@
 			<p>O plugin faz a mesma análise dentro do editor (Gutenberg e clássico) e ainda gera tudo o que o site precisa para os buscadores:</p>
 			<ul class="checks">
 				<li>Título, meta descrição, canonical e regras de indexação (robots)</li>
+				<li>Painel com os conteúdos que precisam de atualização e data “Atualizado em” opcional nos posts</li>
 				<li>Open Graph e cartões do X para compartilhamento</li>
 				<li>Dados estruturados JSON-LD (organização, site, artigo e trilha de navegação)</li>
 				<li>Sitemap XML sem páginas noindex e com data de atualização</li>

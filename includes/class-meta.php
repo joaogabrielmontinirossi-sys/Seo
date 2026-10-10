@@ -55,7 +55,7 @@ class Meta {
 				)
 			);
 		}
-		foreach ( array( 'seo_score', 'readability_score' ) as $field ) {
+		foreach ( array( 'seo_score', 'readability_score', 'quality_score' ) as $field ) {
 			register_post_meta(
 				'',
 				self::key( $field ),

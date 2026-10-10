@@ -19,11 +19,13 @@ require __DIR__ . '/../includes/analysis/class-language.php';
 require __DIR__ . '/../includes/analysis/class-result.php';
 require __DIR__ . '/../includes/analysis/class-readability-analyzer.php';
 require __DIR__ . '/../includes/analysis/class-seo-analyzer.php';
+require __DIR__ . '/../includes/analysis/class-quality-analyzer.php';
 require __DIR__ . '/../includes/class-autofix.php';
 
 use SeoLegibilidade\Analysis\Text;
 use SeoLegibilidade\Analysis\Readability_Analyzer;
 use SeoLegibilidade\Analysis\Seo_Analyzer;
+use SeoLegibilidade\Analysis\Quality_Analyzer;
 use SeoLegibilidade\Autofix;
 
 $failures = 0;
@@ -150,6 +152,30 @@ check( 'densidade: repetição excessiva é ruim', 'bad' === find( $a, 'keyphras
 $a = $s->analyze( array( 'description' => str_repeat( 'Descrição gerada. ', 8 ), 'description_is_auto' => true ) );
 check( 'descrição automática conta como "pode melhorar"', 'ok' === find( $a, 'description_length' )['rating'] );
 
+echo "Atualidade e confiança\n";
+$q = new Quality_Analyzer( 'pt' );
+check( 'pergunta com "?"', $q->is_question( 'Isso funciona?' ) );
+check( 'pergunta por palavra interrogativa', $q->is_question( 'Como escolher um celular' ) );
+check( 'afirmação não é pergunta', ! $q->is_question( 'Dicas para escolher' ) );
+$a = $q->analyze( array( 'post_title' => 'Melhores celulares de 2024', 'current_year' => 2026, 'modified_days' => 800, 'author_bio' => false, 'content' => '<p>Atualmente os preços caíram.</p>' ) );
+check( 'ano vencido no título', 'bad' === find( $a, 'outdated_year' )['rating'] && false !== strpos( find( $a, 'outdated_year' )['message'], '2024' ) );
+check( 'conteúdo parado há mais de 2 anos', 'bad' === find( $a, 'last_updated' )['rating'] );
+check( '"atualmente" sem data concreta', 'ok' === find( $a, 'relative_dates' )['rating'] );
+check( 'autor sem biografia', 'ok' === find( $a, 'author_bio' )['rating'] );
+$a = $q->analyze( array( 'post_title' => 'Melhores celulares de 2026', 'current_year' => 2026, 'modified_days' => 10, 'content' => '<p>Em 2026, atualmente, tudo mudou.</p>' ) );
+check( 'ano atual no título é bom', 'good' === find( $a, 'outdated_year' )['rating'] );
+check( 'atualizado há 10 dias', 'good' === find( $a, 'last_updated' )['rating'] );
+check( 'tempo relativo com data concreta é bom', 'good' === find( $a, 'relative_dates' )['rating'] );
+check( 'sem dados de autor, a verificação é omitida', null === find( $a, 'author_bio' ) );
+$answers = '<h2>Quanto custa?</h2><p>' . str_repeat( 'palavra ', 30 ) . '</p><h2>Como instalar?</h2><ul><li>Passo um</li></ul><h2>Onde comprar?</h2><p>' . str_repeat( 'palavra ', 80 ) . '</p>';
+$a = $q->analyze( array( 'content' => $answers ) );
+check( 'resposta longa demais é apontada', 'ok' === find( $a, 'direct_answers' )['rating'] && false !== strpos( find( $a, 'direct_answers' )['message'], 'Onde comprar?' ) && false === strpos( find( $a, 'direct_answers' )['message'], 'Quanto custa?' ) );
+check( 'subtítulos em pergunta reconhecidos', 'good' === find( $a, 'question_headings' )['rating'] );
+$a = $q->analyze( array( 'site_url' => 'https://meu.com', 'content' => '<p>' . str_repeat( 'Texto sem números nem fontes aqui. ', 60 ) . '<a href="https://meu.com/x">interno</a></p>' ) );
+check( 'sem fontes externas em texto longo', 'bad' === find( $a, 'sources' )['rating'] );
+check( 'sem dados concretos', 'ok' === find( $a, 'data_points' )['rating'] );
+check( 'sem experiência própria', 'ok' === find( $a, 'experience' )['rating'] );
+
 echo "Correções automáticas\n";
 $slug = Autofix::slug( 'Como escolher o melhor café especial para a sua casa', 'café especial', 'pt' );
 check( "slug otimizado ($slug)", 'cafe-especial-escolher-melhor-casa' === $slug );
@@ -162,6 +188,8 @@ check( 'título gerado mantém a frase-chave', Text::contains_keyphrase( $title,
 $title = Autofix::title( 'Como escolher café especial para a sua casa', 'Blog', '-', 'café especial' );
 check( "título gerado começa pela frase-chave ($title)", 'Café especial: como escolher para a sua casa - Blog' === $title );
 check( 'título que já começa pela frase-chave é mantido', 'Café especial em casa - Blog' === Autofix::title( 'Café especial em casa', 'Blog', '-', 'café especial' ) );
+check( 'atualiza só o ano mais recente', 'Melhores celulares de 2026 (desde 2019)' === Autofix::update_years( 'Melhores celulares de 2024 (desde 2019)', 2026 ) );
+check( 'mantém anos futuros e números longos', 'Plano 2030, código 120245' === Autofix::update_years( 'Plano 2030, código 120245', 2026 ) );
 check( 'alt a partir do nome do arquivo', 'Xicara de cafe especial' === Autofix::alt_from_filename( 'https://x.com/wp-content/uploads/2026/10/xicara-de-cafe_especial-1024x768.jpg' ) );
 
 echo "\n$total testes, $failures falha(s)\n";

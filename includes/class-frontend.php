@@ -17,6 +17,7 @@ class Frontend {
 		add_filter( 'wp_robots', array( __CLASS__, 'robots' ), 20 );
 		add_action( 'wp_head', array( __CLASS__, 'head' ), 1 );
 		add_action( 'template_redirect', array( __CLASS__, 'redirect_attachment' ) );
+		add_filter( 'the_content', array( __CLASS__, 'updated_date' ), 5 );
 		remove_action( 'wp_head', 'rel_canonical' );
 		// Evita shortlink duplicado (?p=123), que não é indexável.
 		remove_action( 'wp_head', 'wp_shortlink_wp_head', 10 );
@@ -327,6 +328,26 @@ class Frontend {
 				printf( "<meta name=\"%s\" content=\"%s\" />\n", esc_attr( $name ), 'twitter:image' === $name ? esc_url( $content ) : esc_attr( $content ) );
 			}
 		}
+	}
+
+	/**
+	 * Mostra a data de atualização no início de posts revisados depois de publicados.
+	 */
+	public static function updated_date( $content ) {
+		if ( ! Settings::get( 'show_updated_date' ) || ! is_singular( 'post' ) || ! in_the_loop() || ! is_main_query() ) {
+			return $content;
+		}
+		$post = get_post();
+		if ( ! $post || strtotime( $post->post_modified_gmt ) - strtotime( $post->post_date_gmt ) < DAY_IN_SECONDS ) {
+			return $content;
+		}
+		$date = sprintf(
+			'<p class="seol-updated"><time datetime="%1$s">%2$s</time></p>',
+			esc_attr( get_post_modified_time( 'c', true, $post ) ),
+			/* translators: %s: data. */
+			esc_html( sprintf( __( 'Atualizado em %s', 'seo-legibilidade' ), get_the_modified_date( '', $post ) ) )
+		);
+		return $date . $content;
 	}
 
 	/**

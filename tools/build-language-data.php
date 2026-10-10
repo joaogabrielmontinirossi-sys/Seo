@@ -22,6 +22,9 @@ foreach ( array( 'pt', 'en' ) as $lang ) {
 		'irregularParticiples'  => Language::irregular_participles( $lang ),
 		'participleExceptions'  => Language::participle_exceptions( $lang ),
 		'genericAnchors'        => Language::generic_anchors( $lang ),
+		'questionWords'         => Language::question_words( $lang ),
+		'relativeTime'          => Language::relative_time( $lang ),
+		'experiencePhrases'     => Language::experience_phrases( $lang ),
 	);
 }
 

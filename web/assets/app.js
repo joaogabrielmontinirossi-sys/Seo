@@ -19,6 +19,8 @@
 		slug: $( 'slug' ),
 		siteName: $( 'siteName' ),
 		siteUrl: $( 'siteUrl' ),
+		updatedAt: $( 'updatedAt' ),
+		authorBio: $( 'authorBio' ),
 	};
 	var editor = $( 'content' );
 	var htmlBox = $( 'contentHtml' );
@@ -172,7 +174,7 @@
 	/* ---------------------------------------------------------------- */
 
 	var LABELS = { good: 'Bom', ok: 'Pode melhorar', bad: 'Problema' };
-	var FIXABLE = { title: 1, description: 1, slug: 1, alt: 1 };
+	var FIXABLE = { title: 1, description: 1, slug: 1, alt: 1, year: 1 };
 
 	function renderList( ul, results ) {
 		ul.innerHTML = '';
@@ -229,6 +231,21 @@
 		return m ? m[ 1 ].replace( /^www\./, '' ) : '';
 	}
 
+	function currentYear() {
+		return new Date().getFullYear();
+	}
+
+	function modifiedDays() {
+		var v = f.updatedAt.value;
+		if ( ! v ) {
+			return null;
+		}
+		var then = new Date( v + 'T00:00:00' );
+		var now = new Date();
+		now.setHours( 0, 0, 0, 0 );
+		return Math.max( 0, Math.round( ( now - then ) / 86400000 ) );
+	}
+
 	function analyze() {
 		var html = contentHtml();
 		var eff = effective();
@@ -243,21 +260,29 @@
 			slug: eff.slug,
 			content: html,
 			site_url: f.siteUrl.value,
+			post_title: f.postTitle.value,
+			current_year: currentYear(),
+			modified_days: modifiedDays(),
+			author_bio: f.authorBio.value === '' ? null : f.authorBio.value === 'yes',
 		} );
 
 		renderScore( $( 'scoreSeo' ), res.seo, empty );
 		renderScore( $( 'scoreRead' ), res.readability, empty );
+		renderScore( $( 'scoreQuality' ), res.quality, empty );
 		if ( empty ) {
-			[ 'resultsSeo', 'resultsRead' ].forEach( function ( id ) {
+			[ 'resultsSeo', 'resultsRead', 'resultsQuality' ].forEach( function ( id ) {
 				$( id ).innerHTML = '<li class="empty">Escreva ou cole um texto para ver a análise, ou clique em “Carregar exemplo”.</li>';
 			} );
 			$( 'countSeo' ).textContent = '';
 			$( 'countRead' ).textContent = '';
+			$( 'countQuality' ).textContent = '';
 		} else {
 			renderList( $( 'resultsSeo' ), res.seo.results );
 			renderList( $( 'resultsRead' ), res.readability.results );
 			$( 'countSeo' ).textContent = counts( res.seo.results );
 			$( 'countRead' ).textContent = counts( res.readability.results );
+			renderList( $( 'resultsQuality' ), res.quality.results );
+			$( 'countQuality' ).textContent = counts( res.quality.results );
 		}
 
 		var st = res.readability.stats;
@@ -336,6 +361,15 @@
 		var all = which === 'all';
 		var done = [];
 
+		if ( all || which === 'year' ) {
+			var before = f.postTitle.value + '|' + f.seoTitle.value;
+			f.postTitle.value = SEOL.Autofix.updateYears( f.postTitle.value, currentYear() );
+			f.seoTitle.value = SEOL.Autofix.updateYears( f.seoTitle.value, currentYear() );
+			if ( before !== f.postTitle.value + '|' + f.seoTitle.value ) {
+				done.push( 'ano no título' );
+				post = f.postTitle.value.trim() || f.seoTitle.value.trim();
+			}
+		}
 		if ( ( all || which === 'title' ) && post ) {
 			f.seoTitle.value = SEOL.Autofix.title( post, f.siteName.value.trim(), '-', kp );
 			done.push( 'título' );
@@ -369,19 +403,21 @@
 
 	var EXAMPLE = {
 		keyphrase: 'café especial',
-		postTitle: 'Como escolher café especial para a sua casa',
+		postTitle: 'Como escolher café especial para a sua casa em 2024',
 		seoTitle: '',
 		description: '',
 		slug: 'como-escolher-o-melhor-cafe-especial-para-a-sua-casa',
 		siteName: 'Blog do Café',
 		siteUrl: 'https://blogdocafe.com.br',
+		updatedAt: '',
+		authorBio: 'no',
 		content:
 			'<p>Escolher um café especial muda a sua manhã. Neste guia, você aprende a avaliar torra, aroma e origem dos grãos antes de comprar.</p>' +
 			'<h2>O que é café especial</h2>' +
 			'<p>O café especial recebe pelo menos 80 pontos na escala da Specialty Coffee Association. Além disso, ele tem origem rastreável e grãos sem defeitos. Por isso, o sabor é mais doce e equilibrado. Segundo a <a href="https://sca.coffee">SCA</a>, a avaliação considera aroma, acidez, corpo e finalização.</p>' +
 			'<p>As fazendas que produzem esse tipo de grão foram certificadas por avaliadores independentes, e os lotes foram classificados um a um. O processo inteiro foi acompanhado de perto, desde a colheita manual até a secagem lenta em terreiros suspensos, o que encarece bastante o produto final.</p>' +
 			'<img src="https://blogdocafe.com.br/wp-content/uploads/2026/10/xicara-de-cafe-especial-1024x768.jpg">' +
-			'<h2>Como escolher</h2>' +
+			'<h2>Como escolher o café?</h2>' +
 			'<ul><li>Veja a data de torra no pacote.</li><li>Prefira embalagens com válvula.</li><li>Compre grãos inteiros e moa na hora.</li></ul>' +
 			'<p>Primeiro, observe a data de torra. O ideal é consumir o café até 30 dias depois dela. Em seguida, cheire os grãos. Um bom aroma indica frescor. Para mais detalhes, <a href="/guia-de-moedores/">clique aqui</a>.</p>',
 	};
@@ -450,6 +486,7 @@
 		} );
 		$( 'resultsSeo' ).hidden = tab.getAttribute( 'data-tab' ) !== 'seo';
 		$( 'resultsRead' ).hidden = tab.getAttribute( 'data-tab' ) !== 'readability';
+		$( 'resultsQuality' ).hidden = tab.getAttribute( 'data-tab' ) !== 'quality';
 	} );
 
 	document.querySelector( '.results-panel' ).addEventListener( 'click', function ( e ) {
@@ -480,7 +517,7 @@
 			return;
 		}
 		Object.keys( f ).forEach( function ( k ) {
-			if ( k !== 'lang' && k !== 'siteName' && k !== 'siteUrl' ) {
+			if ( k !== 'lang' && k !== 'siteName' && k !== 'siteUrl' && k !== 'authorBio' ) {
 				f[ k ].value = '';
 			}
 		} );

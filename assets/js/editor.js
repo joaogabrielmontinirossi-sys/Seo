@@ -170,6 +170,7 @@
 			.then( function ( res ) {
 				renderResults( 'seo', res.seo );
 				renderResults( 'readability', res.readability );
+				renderResults( 'quality', res.quality );
 				renderPreview( res.preview );
 				renderStats( res.readability.stats );
 			} )
@@ -209,7 +210,7 @@
 		return request( '/fix', data ).then( function ( fix ) {
 			var all = which === 'all';
 			if ( ( all || which === 'title' ) && fix.title ) {
-				fields.title.value = fix.title;
+				fields.title.value = all ? fix.title_and_year : fix.title;
 			}
 			if ( ( all || which === 'description' ) && fix.description && ( which === 'description' || ! fields.description.value.trim() || fields.description.value.length > 156 || fields.description.value.length < 120 ) ) {
 				fields.description.value = fix.description;
@@ -220,6 +221,18 @@
 				} else {
 					// Editor clássico: aplicado ao salvar (filtro wp_insert_post_data).
 					fields.slug.value = fix.slug;
+				}
+			}
+			if ( all || which === 'year' ) {
+				if ( which === 'year' && fix.year_seo_title ) {
+					fields.title.value = fix.year_seo_title;
+				}
+				if ( fix.year_title && fix.year_title !== getPost().post_title ) {
+					if ( be ) {
+						wp.data.dispatch( 'core/editor' ).editPost( { title: fix.year_title } );
+					} else if ( document.getElementById( 'title' ) ) {
+						document.getElementById( 'title' ).value = fix.year_title;
+					}
 				}
 			}
 			if ( all || which === 'alt' ) {

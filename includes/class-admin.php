@@ -27,6 +27,89 @@ class Admin {
 			add_action( "manage_{$type}_posts_custom_column", array( __CLASS__, 'column' ), 10, 2 );
 		}
 		add_action( 'init', array( __CLASS__, 'term_hooks' ), 99 );
+		add_action( 'wp_dashboard_setup', array( __CLASS__, 'dashboard_widget' ) );
+	}
+
+	/* ------------------------------------------------------------------ */
+	/* Painel: conteúdo para atualizar                                     */
+	/* ------------------------------------------------------------------ */
+
+	public static function dashboard_widget() {
+		if ( current_user_can( 'edit_posts' ) ) {
+			wp_add_dashboard_widget( 'seol_stale', __( 'Conteúdo para atualizar', 'seo-legibilidade' ), array( __CLASS__, 'render_dashboard_widget' ) );
+		}
+	}
+
+	/**
+	 * Posts publicados com ano vencido no título ou sem atualização há mais de um ano.
+	 *
+	 * @return array<int, array{post:\WP_Post, reason:string}>
+	 */
+	public static function stale_posts( $limit = 10 ) {
+		$current = (int) wp_date( 'Y' );
+		$out     = array();
+		$recent  = get_posts(
+			array(
+				'post_type'      => self::post_types(),
+				'post_status'    => 'publish',
+				'posts_per_page' => 200,
+				'orderby'        => 'date',
+				'order'          => 'DESC',
+			)
+		);
+		foreach ( $recent as $p ) {
+			$titles = $p->post_title . ' ' . Meta::post( $p->ID, 'title' );
+			$past   = array_filter(
+				Analysis\Quality_Analyzer::years( $titles ),
+				static function ( $y ) use ( $current ) {
+					return $y < $current;
+				}
+			);
+			if ( $past ) {
+				/* translators: %s: anos. */
+				$out[ $p->ID ] = array( 'post' => $p, 'reason' => sprintf( __( 'título cita %s', 'seo-legibilidade' ), implode( ', ', array_unique( $past ) ) ) );
+			}
+		}
+		$old = get_posts(
+			array(
+				'post_type'      => self::post_types(),
+				'post_status'    => 'publish',
+				'posts_per_page' => $limit,
+				'orderby'        => 'modified',
+				'order'          => 'ASC',
+				'date_query'     => array(
+					array(
+						'column' => 'post_modified_gmt',
+						'before' => gmdate( 'Y-m-d H:i:s', time() - Analysis\Quality_Analyzer::STALE_DAYS * DAY_IN_SECONDS ),
+					),
+				),
+			)
+		);
+		foreach ( $old as $p ) {
+			if ( ! isset( $out[ $p->ID ] ) ) {
+				/* translators: %s: data. */
+				$out[ $p->ID ] = array( 'post' => $p, 'reason' => sprintf( __( 'sem atualização desde %s', 'seo-legibilidade' ), get_the_modified_date( '', $p ) ) );
+			}
+		}
+		return array_slice( array_values( $out ), 0, $limit );
+	}
+
+	public static function render_dashboard_widget() {
+		$items = self::stale_posts();
+		if ( ! $items ) {
+			echo '<p>' . esc_html__( 'Tudo em dia: nenhum conteúdo com ano vencido no título ou sem atualização há mais de um ano.', 'seo-legibilidade' ) . '</p>';
+			return;
+		}
+		echo '<p>' . esc_html__( 'Revisar estes conteúdos (dados, preços, links e ano no título) ajuda a manter as posições no Google:', 'seo-legibilidade' ) . '</p><ul>';
+		foreach ( $items as $item ) {
+			printf(
+				'<li><a href="%s">%s</a> — <span class="description">%s</span></li>',
+				esc_url( get_edit_post_link( $item['post']->ID ) ),
+				esc_html( get_the_title( $item['post'] ) ),
+				esc_html( $item['reason'] )
+			);
+		}
+		echo '</ul>';
 	}
 
 	public static function post_types() {
@@ -54,6 +137,7 @@ class Admin {
 			<div class="seol-scores">
 				<span class="seol-badge" data-score="seo"><span class="seol-dot"></span><?php esc_html_e( 'SEO', 'seo-legibilidade' ); ?>: <strong>–</strong></span>
 				<span class="seol-badge" data-score="readability"><span class="seol-dot"></span><?php esc_html_e( 'Legibilidade', 'seo-legibilidade' ); ?>: <strong>–</strong></span>
+				<span class="seol-badge" data-score="quality"><span class="seol-dot"></span><?php esc_html_e( 'Atualidade e confiança', 'seo-legibilidade' ); ?>: <strong>–</strong></span>
 				<span class="seol-stats"></span>
 				<button type="button" class="button button-primary seol-fix-all"><?php esc_html_e( 'Corrigir automaticamente', 'seo-legibilidade' ); ?></button>
 			</div>
@@ -61,6 +145,7 @@ class Admin {
 			<nav class="seol-tabs" role="tablist">
 				<button type="button" role="tab" class="is-active" data-tab="seo"><?php esc_html_e( 'SEO', 'seo-legibilidade' ); ?></button>
 				<button type="button" role="tab" data-tab="readability"><?php esc_html_e( 'Legibilidade', 'seo-legibilidade' ); ?></button>
+				<button type="button" role="tab" data-tab="quality"><?php esc_html_e( 'Atualidade e confiança', 'seo-legibilidade' ); ?></button>
 				<button type="button" role="tab" data-tab="social"><?php esc_html_e( 'Redes sociais', 'seo-legibilidade' ); ?></button>
 				<button type="button" role="tab" data-tab="advanced"><?php esc_html_e( 'Avançado', 'seo-legibilidade' ); ?></button>
 			</nav>
@@ -97,6 +182,11 @@ class Admin {
 
 			<section class="seol-panel" data-panel="readability" hidden>
 				<ul class="seol-results" data-results="readability"><li class="seol-loading"><?php esc_html_e( 'Analisando…', 'seo-legibilidade' ); ?></li></ul>
+			</section>
+
+			<section class="seol-panel" data-panel="quality" hidden>
+				<p class="description"><?php esc_html_e( 'Sinais que as atualizações recentes do Google valorizam: informação atual, experiência própria, fontes, autoria e respostas diretas (trechos em destaque e AI Overviews).', 'seo-legibilidade' ); ?></p>
+				<ul class="seol-results" data-results="quality"><li class="seol-loading"><?php esc_html_e( 'Analisando…', 'seo-legibilidade' ); ?></li></ul>
 			</section>
 
 			<section class="seol-panel" data-panel="social" hidden>
@@ -230,7 +320,7 @@ class Admin {
 		if ( 'seol' !== $column ) {
 			return;
 		}
-		foreach ( array( 'seo_score' => __( 'SEO', 'seo-legibilidade' ), 'readability_score' => __( 'Legibilidade', 'seo-legibilidade' ) ) as $field => $label ) {
+		foreach ( array( 'seo_score' => __( 'SEO', 'seo-legibilidade' ), 'readability_score' => __( 'Legibilidade', 'seo-legibilidade' ), 'quality_score' => __( 'Atualidade e confiança', 'seo-legibilidade' ) ) as $field => $label ) {
 			$score = Meta::post( $post_id, $field );
 			if ( '' === $score ) {
 				printf( '<span class="seol-col" title="%s">–</span> ', esc_attr( $label ) );
@@ -408,6 +498,7 @@ class Admin {
 					self::field( 'noindex_date_archives', __( 'Arquivos por data', 'seo-legibilidade' ), 'checkbox', __( 'Não indexar (evita conteúdo duplicado)', 'seo-legibilidade' ) );
 					self::field( 'noindex_author_archives', __( 'Arquivos de autor', 'seo-legibilidade' ), 'checkbox', __( 'Não indexar (recomendado para sites com um único autor)', 'seo-legibilidade' ) );
 					self::field( 'redirect_attachments', __( 'Páginas de anexo', 'seo-legibilidade' ), 'checkbox', __( 'Redirecionar (301) para o post ou para o arquivo', 'seo-legibilidade' ) );
+					self::field( 'show_updated_date', __( 'Data de atualização', 'seo-legibilidade' ), 'checkbox', __( 'Mostrar “Atualizado em …” no início dos posts revisados depois da publicação', 'seo-legibilidade' ) );
 					self::field( 'auto_alt', __( 'Texto alternativo', 'seo-legibilidade' ), 'checkbox', __( 'Preencher automaticamente o alt de imagens sem descrição (usa alt da biblioteca, legenda, título ou nome do arquivo)', 'seo-legibilidade' ) );
 					?>
 				</table>
