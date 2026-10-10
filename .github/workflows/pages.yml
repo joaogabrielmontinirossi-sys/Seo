@@ -1,0 +1,59 @@
+name: Testes e GitHub Pages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          coverage: none
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Sintaxe PHP
+        run: find . -name '*.php' -not -path './.git/*' -print0 | xargs -0 -n1 php -l > /dev/null
+      - name: Testes dos analisadores (PHP)
+        run: php tests/run.php
+      - name: Paridade PHP × JavaScript
+        run: node tests/parity.js
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Monta o site e o plugin .zip
+        run: tools/build-site.sh _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    # Publica só a partir do branch padrão do repositório.
+    if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/configure-pages@v5
+      - id: deployment
+        uses: actions/deploy-pages@v4

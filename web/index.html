@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>SEO &amp; Legibilidade</title>
+	<meta name="description" content="Analise e corrija o SEO e a legibilidade dos seus textos direto no navegador: frase-chave, título, meta descrição, URL, Flesch em português, voz passiva e mais.">
+	<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%231e6b45'/%3E%3Cpath d='M9 17l5 5 9-11' stroke='white' stroke-width='3.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="SEO &amp; Legibilidade">
+	<meta property="og:description" content="Analise e corrija o SEO e a legibilidade dos seus textos direto no navegador. Também disponível como plugin para WordPress.">
+	<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+	<header class="site-header">
+		<div class="wrap header-inner">
+			<a class="brand" href="./">
+				<span class="brand-mark" aria-hidden="true"></span>
+				<span>SEO &amp; Legibilidade</span>
+			</a>
+			<nav class="header-nav">
+				<a href="#criterios">Critérios</a>
+				<a href="#wordpress">Plugin WordPress</a>
+				<a class="button button-ghost" href="seo-legibilidade.zip" download>Baixar plugin</a>
+			</nav>
+		</div>
+	</header>
+
+	<main class="wrap">
+		<section class="intro">
+			<h1>Seu texto nos padrões de SEO e legibilidade</h1>
+			<p>Cole ou escreva seu conteúdo, defina a frase-chave e veja na hora o que corrigir. Tudo roda no seu navegador: nada é enviado para servidor nenhum.</p>
+		</section>
+
+		<div class="app">
+			<section class="panel editor-panel" aria-label="Conteúdo">
+				<div class="field-grid">
+					<label class="field">
+						<span>Frase-chave de foco</span>
+						<input id="keyphrase" type="text" placeholder="Ex.: café especial" autocomplete="off">
+					</label>
+					<label class="field">
+						<span>Idioma</span>
+						<select id="lang">
+							<option value="pt">Português</option>
+							<option value="en">Inglês</option>
+						</select>
+					</label>
+				</div>
+
+				<label class="field">
+					<span>Título do post (H1)</span>
+					<input id="postTitle" type="text" placeholder="Ex.: Como escolher café especial para a sua casa">
+				</label>
+
+				<label class="field">
+					<span>Título SEO <small class="hint">opcional; vazio = título do post + nome do site</small></span>
+					<input id="seoTitle" type="text">
+					<span class="meter" data-meter="title"><span></span></span>
+					<small class="hint" id="titleInfo"></small>
+				</label>
+
+				<label class="field">
+					<span>Meta descrição</span>
+					<textarea id="description" rows="3"></textarea>
+					<span class="meter" data-meter="description"><span></span></span>
+					<small class="hint"><span id="descCount">0</span> caracteres · ideal: 120 a 156</small>
+				</label>
+
+				<label class="field">
+					<span>URL (slug) <small class="hint">vazio = gerado do título</small></span>
+					<input id="slug" type="text" placeholder="cafe-especial" autocomplete="off" spellcheck="false">
+				</label>
+
+				<details class="site-settings">
+					<summary>Dados do site</summary>
+					<div class="field-grid">
+						<label class="field">
+							<span>Nome do site</span>
+							<input id="siteName" type="text" placeholder="Meu Blog">
+						</label>
+						<label class="field">
+							<span>Endereço do site</span>
+							<input id="siteUrl" type="url" placeholder="https://meusite.com.br">
+						</label>
+					</div>
+					<p class="hint">O endereço serve para distinguir links internos de externos.</p>
+				</details>
+
+				<div class="field">
+					<div class="content-head">
+						<span id="contentLabel">Conteúdo</span>
+						<div class="toolbar" role="toolbar" aria-label="Formatação">
+							<button type="button" data-cmd="formatBlock" data-arg="H2" title="Subtítulo H2">H2</button>
+							<button type="button" data-cmd="formatBlock" data-arg="H3" title="Subtítulo H3">H3</button>
+							<button type="button" data-cmd="formatBlock" data-arg="P" title="Parágrafo">¶</button>
+							<button type="button" data-cmd="bold" title="Negrito"><b>B</b></button>
+							<button type="button" data-cmd="insertUnorderedList" title="Lista">• Lista</button>
+							<button type="button" data-cmd="createLink" title="Link">Link</button>
+							<button type="button" data-cmd="insertImage" title="Imagem">Imagem</button>
+							<button type="button" id="toggleHtml" aria-pressed="false" title="Editar o HTML">HTML</button>
+						</div>
+					</div>
+					<div id="content" class="content" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="contentLabel" data-placeholder="Cole aqui o texto do seu post (do Google Docs, Word ou WordPress). Títulos, listas, links e imagens são mantidos."></div>
+					<textarea id="contentHtml" class="content content-html" hidden spellcheck="false" aria-label="HTML do conteúdo"></textarea>
+				</div>
+
+				<div class="actions">
+					<button type="button" class="button button-primary" id="fixAll">Corrigir automaticamente</button>
+					<button type="button" class="button" id="loadExample">Carregar exemplo</button>
+					<button type="button" class="button button-ghost" id="clearAll">Limpar</button>
+				</div>
+			</section>
+
+			<aside class="panel results-panel" aria-label="Resultados">
+				<div class="scores">
+					<div class="score" id="scoreSeo">
+						<svg viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="value" cx="18" cy="18" r="15.9"/></svg>
+						<div><strong>–</strong><span>SEO</span></div>
+					</div>
+					<div class="score" id="scoreRead">
+						<svg viewBox="0 0 36 36" aria-hidden="true"><circle class="track" cx="18" cy="18" r="15.9"/><circle class="value" cx="18" cy="18" r="15.9"/></svg>
+						<div><strong>–</strong><span>Legibilidade</span></div>
+					</div>
+				</div>
+				<p class="stats" id="stats"></p>
+
+				<div class="serp" aria-label="Prévia no Google">
+					<div class="serp-site">
+						<span class="serp-favicon" aria-hidden="true"></span>
+						<span><span class="serp-name" id="serpName"></span><span class="serp-url" id="serpUrl"></span></span>
+					</div>
+					<div class="serp-title" id="serpTitle"></div>
+					<div class="serp-desc" id="serpDesc"></div>
+				</div>
+
+				<div class="tabs" role="tablist">
+					<button type="button" role="tab" aria-selected="true" data-tab="seo">SEO <span class="count" id="countSeo"></span></button>
+					<button type="button" role="tab" aria-selected="false" data-tab="readability">Legibilidade <span class="count" id="countRead"></span></button>
+				</div>
+				<ul class="results" id="resultsSeo" role="tabpanel"></ul>
+				<ul class="results" id="resultsRead" role="tabpanel" hidden></ul>
+			</aside>
+		</div>
+
+		<section class="info" id="criterios">
+			<h2>Critérios usados</h2>
+			<div class="cards">
+				<div class="card">
+					<h3>SEO</h3>
+					<ul>
+						<li>Frase-chave com até 4 palavras de conteúdo, presente no título SEO (de preferência no início), na meta descrição, na URL, na primeira frase, em parte dos subtítulos e no alt de uma imagem</li>
+						<li>Densidade da frase-chave entre 0,5% e 3%</li>
+						<li>Título SEO de 200 a 580 px, cerca de 30 a 60 caracteres</li>
+						<li>Meta descrição de 120 a 156 caracteres</li>
+						<li>URL curta, sem acentos nem palavras vazias</li>
+						<li>Pelo menos 300 palavras</li>
+						<li>Todas as imagens com texto alternativo</li>
+						<li>Ao menos um link interno e um externo, sem "clique aqui"</li>
+						<li>Nenhum H1 no texto e nenhum nível de título pulado</li>
+					</ul>
+				</div>
+				<div class="card">
+					<h3>Legibilidade</h3>
+					<ul>
+						<li>Índice Flesch de 60 ou mais. Em português, usa a adaptação de Martins et al.: 248,835 − 1,015 × palavras/frase − 84,6 × sílabas/palavra</li>
+						<li>No máximo 25% das frases com mais de 20 palavras</li>
+						<li>Parágrafos de até 150 palavras</li>
+						<li>Um subtítulo a cada 300 palavras, no máximo</li>
+						<li>Voz passiva em no máximo 10% das frases</li>
+						<li>Palavras de transição em pelo menos 30% das frases</li>
+						<li>Nunca 3 frases seguidas começando com a mesma palavra</li>
+					</ul>
+				</div>
+			</div>
+			<p class="hint">Notas: verde a partir de 71, laranja de 41 a 70, vermelho até 40. Os limites seguem o Google Search Central e as faixas consolidadas pelas principais ferramentas de SEO.</p>
+		</section>
+
+		<section class="info" id="wordpress">
+			<h2>Use direto no WordPress</h2>
+			<p>O plugin faz a mesma análise dentro do editor (Gutenberg e clássico) e ainda gera tudo o que o site precisa para os buscadores:</p>
+			<ul class="checks">
+				<li>Título, meta descrição, canonical e regras de indexação (robots)</li>
+				<li>Open Graph e cartões do X para compartilhamento</li>
+				<li>Dados estruturados JSON-LD (organização, site, artigo e trilha de navegação)</li>
+				<li>Sitemap XML sem páginas noindex e com data de atualização</li>
+				<li>Texto alternativo automático para imagens e redirecionamento das páginas de anexo</li>
+			</ul>
+			<ol class="steps">
+				<li><a href="seo-legibilidade.zip" download>Baixe o plugin (.zip)</a>.</li>
+				<li>No WordPress, vá em <strong>Plugins → Adicionar novo → Enviar plugin</strong> e envie o arquivo.</li>
+				<li>Ative o plugin e preencha <strong>Configurações → SEO &amp; Legibilidade</strong>.</li>
+				<li>Envie <code>/wp-sitemap.xml</code> ao Google Search Console.</li>
+			</ol>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<span>SEO &amp; Legibilidade · código aberto (GPL-2.0)</span>
+			<a href="https://github.com/joaogabrielmontinirossi-sys/Seo">Código no GitHub</a>
+		</div>
+	</footer>
+
+	<script src="assets/language-data.js"></script>
+	<script src="assets/analyzer.js"></script>
+	<script src="assets/app.js"></script>
+</body>
+</html>

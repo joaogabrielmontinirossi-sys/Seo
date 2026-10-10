@@ -63,6 +63,7 @@ check( 'frase-chave ignora acentos e plural', 2 === Text::count_keyphrase( 'Os c
 check( 'frase-chave tolera palavra vazia no meio', Text::contains_keyphrase( 'Como comprar uma casa barata', 'comprar casa', array( 'uma' ) ) );
 check( 'frase-chave não casa dentro de outra palavra', ! Text::contains_keyphrase( 'cascata', 'casa' ) );
 check( 'truncate respeita palavras', 'Um texto bastante' === Text::truncate( 'Um texto bastante comprido', 20 ) );
+check( 'truncate não corrompe letras acentuadas (Ó)', 'CASA DA AVÓ' === Text::truncate( 'CASA DA AVÓ — receitas', 13 ) );
 check( 'largura em pixels cresce com texto', Text::pixel_width( 'WWWW' ) > Text::pixel_width( 'iiii' ) );
 check( 'extrai alt de imagens', array( 'src' => 'a.jpg', 'alt' => 'Gato' ) === Text::images( '<img src="a.jpg" alt="Gato">' )[0] );
 check( 'img sem alt retorna null', null === Text::images( '<img src="a.jpg">' )[0]['alt'] );

@@ -129,7 +129,7 @@ class Autofix {
 			$start = mb_strlen( substr( $norm, 0, $m[0][1] ) );
 			$len   = mb_strlen( $m[0][0] );
 			$rest  = mb_substr( $title, 0, $start ) . mb_substr( $title, $start + $len );
-			$rest  = trim( preg_replace( '/\s+([,.;:!?])/u', '$1', preg_replace( '/\s+/u', ' ', $rest ) ), " ,;:-–—" );
+			$rest  = Text::trim_punctuation( preg_replace( '/\s+([,.;:!?])/u', '$1', preg_replace( '/\s+/u', ' ', $rest ) ) );
 			$rest  = preg_replace( '/\s+(de|do|da|para|em|com|o|a|e)$/u', '', $rest );
 		}
 		$lead = mb_strtoupper( mb_substr( $keyphrase, 0, 1 ) ) . mb_substr( $keyphrase, 1 );
@@ -144,7 +144,7 @@ class Autofix {
 		while ( count( $words ) > 1 && Text::pixel_width( implode( ' ', $words ) ) > $max_px ) {
 			array_pop( $words );
 		}
-		return rtrim( implode( ' ', $words ), ' ,;:-–—' );
+		return Text::trim_punctuation( implode( ' ', $words ), false );
 	}
 
 	/**

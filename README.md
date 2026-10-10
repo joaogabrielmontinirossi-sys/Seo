@@ -7,6 +7,8 @@ Plugin que analisa e **corrige automaticamente** o SEO e a legibilidade de posts
 - Prévia de como o resultado aparece no Google.
 - Análise em **português** (Flesch adaptado por Martins et al., voz passiva, conectivos) e em **inglês**.
 
+**Versão web:** https://joaogabrielmontinirossi-sys.github.io/Seo/ faz a mesma análise direto no navegador (sem servidor: o texto não sai do seu computador) e oferece o plugin para download.
+
 ## Instalação
 
 1. Copie esta pasta para `wp-content/plugins/seo-legibilidade/` (ou compacte em `.zip` e envie em **Plugins → Adicionar novo → Enviar plugin**).
@@ -68,10 +70,24 @@ A nota de cada aba vai de 0 a 100: verde a partir de 71, laranja de 41 a 70 e ve
 - **Verificação** do Google Search Console e do Bing Webmaster Tools.
 - **Correções automáticas na exibição**: as páginas de anexo são redirecionadas (301) para o post ou para o arquivo, e imagens sem `alt` recebem o alt da biblioteca de mídia, a legenda, o título ou o nome do arquivo.
 
+## Versão web (GitHub Pages)
+
+A pasta `web/` é um site estático com o mesmo motor de análise portado para JavaScript (`web/assets/analyzer.js`). A cada push no branch padrão, o workflow `.github/workflows/pages.yml` roda os testes, monta o site com `tools/build-site.sh` (incluindo `seo-legibilidade.zip`) e publica no GitHub Pages.
+
+Para ativar uma única vez: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+Para manter os dois motores iguais:
+
+- as listas de palavras ficam só no PHP; `php tools/build-language-data.php` gera `web/assets/language-data.js`;
+- `node tests/parity.js` roda os mesmos casos nos dois motores e exige resultados idênticos.
+
+Para ver localmente: `tools/build-site.sh && python3 -m http.server -d _site`.
+
 ## Desenvolvimento
 
 ```bash
-php tests/run.php   # 62 testes dos analisadores e das correções automáticas, sem dependências
+php tests/run.php      # testes dos analisadores e das correções automáticas, sem dependências
+node tests/parity.js   # paridade entre o motor PHP e o JavaScript
 ```
 
 Estrutura:
@@ -90,6 +106,8 @@ includes/class-sitemap.php      Ajustes do sitemap nativo
 includes/class-rest.php         Endpoints /seo-legibilidade/v1/analyze e /fix
 includes/class-admin.php        Painel do editor, colunas, termos, configurações
 assets/                         JS e CSS do painel (sem etapa de build)
+web/                            Versão web estática (GitHub Pages)
+tools/                          Geração de language-data.js e do site
 ```
 
 Filtro disponível: `seol_schema_graph` (array) para alterar o grafo JSON-LD.

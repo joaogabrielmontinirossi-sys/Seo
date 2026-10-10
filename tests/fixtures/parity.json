@@ -1,0 +1,68 @@
+[
+  {
+    "name": "artigo em português completo",
+    "lang": "pt",
+    "keyphrase": "café especial",
+    "title": "Como escolher café especial para a sua casa - Blog do Café",
+    "description": "",
+    "slug": "como-escolher-o-melhor-cafe-especial-para-a-sua-casa",
+    "site_url": "https://blogdocafe.com.br",
+    "post_title": "Como escolher café especial para a sua casa",
+    "content": "<!-- wp:paragraph --><p>Escolher um café especial muda a sua manhã. Neste guia, você aprende a avaliar torra, aroma e origem dos grãos antes de comprar.</p><!-- /wp:paragraph --><h2 class=\"wp-block-heading\">O que é café especial</h2><p>O café especial recebe pelo menos 80 pontos na escala da Specialty Coffee Association. Além disso, ele tem origem rastreável e grãos sem defeitos. Por isso, o sabor é mais doce e equilibrado. Segundo a <a href=\"https://sca.coffee\">SCA</a>, a avaliação considera aroma, acidez e corpo.</p><figure class=\"wp-block-image\"><img src=\"https://blogdocafe.com.br/wp-content/uploads/2026/10/xicara-de-cafe-especial-1024x768.jpg\" alt=\"\"/></figure><h2>Como escolher</h2><ul><li>Veja a data de torra no pacote.</li><li>Prefira embalagens com válvula.</li><li>Compre grãos inteiros e moa na hora.</li></ul><p>Primeiro, observe a data de torra. O ideal é consumir o café até 30 dias depois dela. Em seguida, cheire os grãos. Um bom aroma indica frescor. Também vale ler <a href=\"/guia-de-moedores/\">nosso guia de moedores</a> para extrair o melhor sabor.</p>"
+  },
+  {
+    "name": "texto difícil, voz passiva, H1 e links genéricos",
+    "lang": "pt",
+    "keyphrase": "regulamentação de criptomoedas no Brasil hoje em dia",
+    "title": "Um título extremamente longo que certamente vai ser cortado pelo Google nos resultados",
+    "description": "Curta.",
+    "slug": "Regulação-de-Cripto-2",
+    "site_url": "https://www.exemplo.com",
+    "post_title": "Regulação de cripto",
+    "content": "<h1>Título</h1><h4>Pulo de nível</h4><p>A regulamentação foi aprovada pelo Congresso Nacional após intensas discussões parlamentares que envolveram representantes de diversos setores econômicos e entidades da sociedade civil organizada. A proposta foi rapidamente encaminhada para sanção presidencial. A norma foi publicada no Diário Oficial da União. A lei foi considerada um marco. A medida foi elogiada pelo mercado financeiro nacional e internacional, sendo apontada como fundamental para a consolidação institucional das operações envolvendo ativos virtuais no território brasileiro. As exchanges foram obrigadas a se registrar. Os dados foram entregues ao Banco Central. A fiscalização será feita por órgãos competentes. As empresas foram notificadas. O prazo foi estendido. A decisão foi comemorada. O texto foi escrito por especialistas. A consulta foi aberta ao público em geral durante sessenta dias consecutivos, permitindo contribuições amplas e detalhadas de todos os interessados no tema.</p><p>Veja <a href=\"https://www.exemplo.com/outro\">clique aqui</a> e <a href=\"https://gov.br\">saiba mais</a> e <a href=\"#topo\">topo</a> &amp; <a href=\"mailto:a@b.c\">e-mail</a>.</p><img src=\"https://x.com/IMG_1234.jpg\"><img src=\"https://x.com/grafico.png\" alt=\"Gráfico da regulamentação de criptomoedas\">"
+  },
+  {
+    "name": "texto longo sem subtítulos e com repetição de início",
+    "lang": "pt",
+    "keyphrase": "e-commerce",
+    "title": "E-commerce: guia",
+    "description": "Aprenda a montar um e-commerce do zero com dicas práticas sobre plataforma, pagamentos, logística e marketing para vender mais todos os dias na internet.",
+    "slug": "e-commerce",
+    "site_url": "https://loja.com",
+    "post_title": "Guia de e-commerce",
+    "content": "REPEAT_PT"
+  },
+  {
+    "name": "artigo em inglês",
+    "lang": "en",
+    "keyphrase": "specialty coffee",
+    "title": "Specialty coffee: how to choose the best beans at home",
+    "description": "Learn how to choose specialty coffee at home: check the roast date, the aroma and the origin of the beans, and store them properly for the best flavor.",
+    "slug": "specialty-coffee-choose-beans",
+    "site_url": "https://coffee.blog",
+    "post_title": "How to choose specialty coffee",
+    "content": "<p>Specialty coffee changes your morning. In this guide, you will learn how to judge roast, aroma and origin before you buy.</p><h2>What is specialty coffee</h2><p>Specialty coffee scores at least 80 points on the SCA scale. Moreover, it has a traceable origin. Therefore, the flavor is sweeter. The beans were carefully selected and were roasted by experts. However, price matters too. For example, a bag can cost twice as much as regular coffee.</p><h3>Roast date</h3><p>First, check the roast date. Then smell the beans. Read <a href=\"https://coffee.blog/grinders\">our grinder review</a> and the <a href=\"https://sca.coffee\">SCA guide</a>. Mr. Smith says the U.S. market is growing fast &mdash; and it&#39;s true.</p><img src=\"a.jpg\" alt=\"A cup of specialty coffee\">"
+  },
+  {
+    "name": "editor clássico sem <p>, entidades e quebras",
+    "lang": "pt",
+    "keyphrase": "pão caseiro",
+    "title": "%%title%%",
+    "description": "Receita de pão caseiro fofinho, simples e barato. Veja o passo a passo com fotos, as medidas certas e dicas para acertar a fermentação em casa sempre.",
+    "slug": "pao-caseiro",
+    "site_url": "https://receitas.com",
+    "post_title": "Pão caseiro fofinho da vovó",
+    "content": "Fazer pão caseiro é fácil.\n\nMisture a farinha, o fermento e a água morna. Sove por dez minutos.\n\n<h2>Fermentação do pão caseiro</h2>\n\nDeixe descansar por uma hora&nbsp;em local abafado. O Dr. Silva recomenda usar fermento fresco. J. R. Tolkien também fazia pães.\n\nAsse a 180&#176;C por quarenta minutos [gallery ids=\"1,2\"] e sirva quente."
+  },
+  {
+    "name": "sem frase-chave e quase sem texto",
+    "lang": "pt",
+    "keyphrase": "",
+    "title": "",
+    "description": "",
+    "slug": "",
+    "site_url": "",
+    "post_title": "Rascunho",
+    "content": "<p>Curto.</p>"
+  }
+]

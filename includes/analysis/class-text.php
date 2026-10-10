@@ -31,7 +31,7 @@ class Text {
 		$html = preg_replace( '#<!--.*?-->#s', ' ', $html );
 		$html = preg_replace( '#\[/?[a-zA-Z_][^\]]*\]#', ' ', $html );
 		// Quebras estruturais viram separadores para não grudar palavras de blocos distintos.
-		$html = preg_replace( '#</?(p|div|h[1-6]|li|ul|ol|br|tr|td|th|blockquote|figure|figcaption|section|article|pre)[^>]*>#i', "\n", $html );
+		$html = preg_replace( '#</?(p|div|h[1-6]|li|ul|ol|br|tr|td|th|blockquote|figure|figcaption|section|article|pre)\b[^>]*>#i', "\n", $html );
 		$text = html_entity_decode( strip_tags( $html ), ENT_QUOTES | ENT_HTML5, 'UTF-8' );
 		$text = str_replace( "\xC2\xA0", ' ', $text );
 		$text = preg_replace( "/[ \t]+/u", ' ', $text );
@@ -47,7 +47,7 @@ class Text {
 	public static function paragraphs( $html ) {
 		$html = (string) $html;
 		$out  = array();
-		if ( preg_match_all( '#<p[^>]*>(.*?)</p>#is', $html, $m ) ) {
+		if ( preg_match_all( '#<p\b[^>]*>(.*?)</p>#is', $html, $m ) ) {
 			foreach ( $m[1] as $p ) {
 				$t = trim( self::strip( $p ) );
 				if ( '' !== $t ) {
@@ -262,7 +262,16 @@ class Text {
 		} else {
 			$cut = mb_substr( $cut, 0, $max - mb_strlen( $ellipsis ) );
 		}
-		return rtrim( $cut, " ,;:-–—" ) . $ellipsis;
+		return self::trim_punctuation( $cut, false ) . $ellipsis;
+	}
+
+	/**
+	 * Remove espaços e pontuação de ligação das pontas (seguro para UTF-8,
+	 * ao contrário de trim() com caracteres multibyte na lista).
+	 */
+	public static function trim_punctuation( $text, $both_sides = true ) {
+		$text = preg_replace( '/[\s,;:\-–—]+$/u', '', (string) $text );
+		return $both_sides ? preg_replace( '/^[\s,;:\-–—]+/u', '', $text ) : $text;
 	}
 
 	/**
