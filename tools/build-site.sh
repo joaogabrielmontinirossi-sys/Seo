@@ -5,6 +5,9 @@ set -euo pipefail
 
 root="$(cd "$(dirname "$0")/.." && pwd)"
 out="${1:-$root/_site}"
+# Caminho absoluto: o zip roda depois de um cd para a pasta temporária.
+mkdir -p "$out"
+out="$(cd "$out" && pwd)"
 tmp="$(mktemp -d)"
 trap 'rm -rf "$tmp"' EXIT
 
