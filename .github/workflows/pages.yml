@@ -55,5 +55,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/configure-pages@v5
+        with:
+          # Ativa o Pages (fonte: GitHub Actions) se ainda não estiver ativo.
+          enablement: true
       - id: deployment
         uses: actions/deploy-pages@v4
